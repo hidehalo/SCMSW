@@ -5,6 +5,9 @@ public class PhilosopherProblem {
     class Philosopher extends Thread {
       private Chopstick left, right;
       private Random random;
+      public int thinking = 5;
+      public int eating = 5;
+      public int limits = 1000;
 
       public Philosopher (Chopstick left, Chopstick right) {
         this.left = left;
@@ -14,11 +17,12 @@ public class PhilosopherProblem {
 
       public void run() {
         try {
-          while (true) {
-            Thread.sleep(random.nextInt(1000));
+          int times = this.limits;
+          while ((--times) > 0) {
+            Thread.sleep(random.nextInt(this.thinking));
             synchronized(left) {
               synchronized(right) {
-                Thread.sleep(random.nextInt(1000));
+                Thread.sleep(random.nextInt(this.eating));
               }
             }
           }
@@ -42,6 +46,7 @@ public class PhilosopherProblem {
     p3.start();
     p4.start();
     p5.start();
+    Thread.yield();
     p1.join();
     p2.join();
     p3.join();
