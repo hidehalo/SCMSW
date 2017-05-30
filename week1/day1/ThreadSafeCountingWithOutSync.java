@@ -2,18 +2,17 @@ public class ThreadSafeCountingWithOutSync {
   public static void main(String[] args) throws InterruptedException {
     class Counter {
       private int count = 0;
-      public void increment() {
-        ++count;
-      }  
+      
       public int getCount() {
         return count;
       }
 
-      public void setCount(int count) {
-        this.count = count;
-      }
-      public Object getCopy() throws CloneNotSupportedException {
-        return this.clone();
+      public void CAS(int init, int step) {
+        if (init != this.count) {
+          this.count += step;
+        } else {
+          this.count = init + step;
+        }
       }
     };
 
@@ -21,19 +20,13 @@ public class ThreadSafeCountingWithOutSync {
 
     class CountingThread extends Thread {
       public void run() {
-        try {
-          Counter tmpCounter = (Counter) counter.getCopy();
-
-          for (int i = 0; i < 10000 ; ++i) {
-            tmpCounter.increment();
-          }
-
-          int ret = counter.getCount() + tmpCounter.getCount();
-          System.out.println(tmpCounter.getCount());
-          counter.setCount(ret);
-        } catch (CloneNotSupportedException e) {
-          e.printStackTrace();
+        int init, copy;
+        init = counter.getCount();
+        copy = init;
+        for (int i = 0; i < 10000 ; ++i) {
+          ++copy;
         }
+        counter.CAS(init, copy);
       }
     };
 
